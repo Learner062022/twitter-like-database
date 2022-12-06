@@ -1,0 +1,70 @@
+CREATE TABLE IF NOT EXISTS users(
+userName VARCHAR(20) NOT NULL PRIMARY KEY,
+firstName VARCHAR(20),
+lastName VARCHAR(20),
+emailAddress VARCHAR(30),
+dateJoined DATE
+);
+
+SELECT userName, emailAddress FROM users;
+
+SELECT userName, dateJoined FROM users WHERE YEAR(dateJoined) = YEAR(NOW());
+
+SELECT COUNT(userName) FROM users WHERE YEAR(dateJoined) = YEAR(NOW());
+
+SELECT lastName, firstName, emailAddress, dateJoined FROM users ORDER BY lastName, firstName;
+
+CREATE INDEX indexEmailAddress ON users (emailAddress);
+
+CREATE INDEX indexLastNameFirstName ON users (lastName, firstName);
+
+DELIMITER //
+CREATE PROCEDURE details_user(joined DATE)
+BEGIN
+SELECT * FROM users WHERE YEAR(dateJoined) = YEAR(joined) ORDER BY DATE;
+END//
+DELIMITER ;
+
+CREATE TABLE IF NOT EXISTS messages(
+usersID VARCHAR(20),
+authorUserName VARCHAR(20),
+message VARCHAR(256),
+timePosted TIMESTAMP NOT NULL PRIMARY KEY
+);
+
+CREATE VIEW user_messages AS SELECT * FROM messages INNER JOIN users ON users.userName = messages.usersID;
+
+SELECT message, userName FROM user_messages;
+
+SELECT userName, emailAddress, message FROM user_messages ORDER BY timePosted ASC;
+
+SELECT COUNT(message) FROM user_messages;
+
+DELIMITER //
+CREATE PROCEDURE percentage_messages_sent(name_user VARCHAR(20))
+BEGIN 
+SELECT ((SELECT COUNT(message) FROM user_messages where userName = name_user) / COUNT(message) * 100) AS "percent of messages sent" FROM user_messages;
+END //
+DELIMITER ;
+
+SELECT userName FROM user_messages WHERE message IS NOT NULL;
+
+DELIMITER //
+CREATE PROCEDURE messages(name_user VARCHAR(20))
+BEGIN 
+SELECT message FROM user_messages ORDER BY timePosted ASC;
+END //
+DELIMITER ;
+
+CREATE TABLE IF NOT EXISTS messageTopics(
+ID TINYINT UNSIGNED NOT NULL PRIMARY KEY,
+messagesID TIME,
+topicName VARCHAR(100)
+);
+
+CREATE TABLE IF NOT EXISTS topics(
+name VARCHAR(100) NOT NULL PRIMARY KEY,
+trending BIT
+);
+
+SELECT name FROM topics WHERE trending = 1;
